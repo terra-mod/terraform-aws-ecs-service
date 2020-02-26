@@ -15,7 +15,8 @@ locals {
 }
 
 /**
- * Create a default Security Group with either ingress from a LB or direct ingress via Service Discovery.
+ * Create a default Security Group - ingress and egress rules are attached separately to allow additional rules
+ * outside of this module to be attached to this security group if desired.
  */
 resource aws_security_group security_group {
   description = "ECS Service security group for ${var.cluster_name} ${var.name}."
@@ -23,23 +24,59 @@ resource aws_security_group security_group {
   vpc_id = var.vpc_id
   name   = var.name
 
-  ingress {
-    from_port       = var.ingress_target_port
-    protocol        = var.ingress_protocol
-    to_port         = var.ingress_target_port
-    cidr_blocks     = var.enable_service_discovery ? var.service_discovery_ingress_cidr_blocks : null
-    security_groups = var.enable_load_balancing ? [var.load_balancer_security_group] : null
-  }
-
-  # Allow all Egress
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags = local.tags
+}
+
+/**
+ * Creates an default egress rule.
+ */
+resource aws_security_group_rule egress {
+  security_group_id = aws_security_group.security_group.id
+
+  description = "Default egress - fully open."
+  type        = "egress"
+
+  from_port = 0
+  to_port   = 0
+  protocol  = -1
+
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+/**
+ * Creates the default ingress rule for the service for service discovery.
+ */
+resource aws_security_group_rule sds_ingress {
+  count = var.enable_service_discovery ? 1 : 0
+
+  security_group_id = aws_security_group.security_group.id
+
+  description = "Main ingress rule."
+  type        = "ingress"
+
+  from_port = var.ingress_target_port
+  to_port   = var.ingress_target_port
+  protocol  = var.ingress_protocol
+
+  cidr_blocks = var.service_discovery_ingress_cidr_blocks
+}
+
+/**
+ * Creates the default ingress rule for the service for load balancing.
+ */
+resource aws_security_group_rule lb_ingress {
+  count = var.enable_load_balancing ? 1 : 0
+
+  security_group_id = aws_security_group.security_group.id
+
+  description = "Main ingress rule."
+  type        = "ingress"
+
+  from_port = var.ingress_target_port
+  to_port   = var.ingress_target_port
+  protocol  = var.ingress_protocol
+
+  source_security_group_id = var.load_balancer_security_group
 }
 
 /**
