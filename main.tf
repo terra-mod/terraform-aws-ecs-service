@@ -112,6 +112,15 @@ resource aws_ecs_service service {
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
 
+  dynamic "ordered_placement_strategy" {
+    for_each = var.launch_type == "FARGATE" ? [] : [1]
+
+    content {
+      type  = "spread"
+      field = "attribute:ecs.availability-zone"
+    }
+  }
+
   # This is only used with Load Balancing
   health_check_grace_period_seconds = var.enable_load_balancing ? var.health_check_grace_period_seconds : null
 
@@ -159,7 +168,7 @@ resource aws_ecs_service service {
 resource aws_service_discovery_service sds {
   count = var.enable_service_discovery ? 1 : 0
 
-  name = "${var.cluster_name}-${var.name}"
+  name = var.name
 
   dns_config {
     namespace_id = var.service_discovery_namespace_id
