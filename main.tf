@@ -126,8 +126,10 @@ resource aws_ecs_service service {
     for_each = aws_service_discovery_service.sds
 
     content {
-      registry_arn = service_registries.value.arn
-      port         = var.service_discovery_dns_record_type == "SRV" ? var.ingress_target_port : null
+      registry_arn   = service_registries.value.arn
+      port           = var.service_discovery_container_port
+      container_name = var.service_discovery_container_name
+      container_port = var.service_discovery_container_port
     }
   }
 
@@ -166,6 +168,8 @@ resource aws_service_discovery_service sds {
       ttl  = var.service_discovery_dns_ttl
       type = var.service_discovery_dns_record_type
     }
+
+    routing_policy = var.service_discovery_routing_policy
   }
 
   health_check_custom_config {

@@ -125,6 +125,24 @@ variable enable_service_discovery {
   default     = false
 }
 
+variable service_discovery_port {
+  description = "The port value used if your Service Discovery service specified an SRV record."
+  type        = number
+  default     = null
+}
+
+variable service_discovery_container_name {
+  description = "The container name value, already specified in the task definition, to be used for your service discovery service."
+  type        = string
+  default     = null
+}
+
+variable service_discovery_container_port {
+  description = "The port value, already specified in the task definition, to be used for your service discovery service."
+  type        = number
+  default     = null
+}
+
 variable service_discovery_ingress_cidr_blocks {
   description = "The CIDR Blocks that should be used to limit ingress to the Service."
   type        = list(string)
@@ -150,7 +168,7 @@ variable service_discovery_dns_ttl {
 }
 
 variable service_discovery_routing_policy {
-  description = "he routing policy that you want to apply to all records that Route 53 creates when you register an instance and specify the service. One of `MULTIVALUE` or `WEIGHTED`."
+  description = "The routing policy that you want to apply to all records that Route 53 creates when you register an instance and specify the service. One of `MULTIVALUE` or `WEIGHTED`."
   type        = string
   default     = "MULTIVALUE"
 }
