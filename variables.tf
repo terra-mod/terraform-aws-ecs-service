@@ -265,10 +265,10 @@ variable load_balancer_draining_delay {
 }
 
 # Secrets
-variable secrets_policy_arn {
-  description = "The ARN of a IAM Policy that grants the Service access to one or more SecretsManager Secrets."
-  type        = string
-  default     = null
+variable secrets_policy_arns {
+  description = "The ARNs of IAM Policies that grants the Service access to one or more SecretsManager Secrets."
+  type        = list(string)
+  default     = []
 }
 
 # ECS Auto Scaling

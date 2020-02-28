@@ -320,8 +320,8 @@ EOF
  * Attach a policy to the given role to allow access to Secrets in Secrets Manager.
  */
 resource aws_iam_role_policy_attachment secrets_policy_attachment {
-  count = var.secrets_policy_arn != null ? 1 : 0
+  count = length(var.secrets_policy_arns)
 
   role       = aws_iam_role.ecs_execution_role.id
-  policy_arn = var.secrets_policy_arn
+  policy_arn = element(var.secrets_policy_arns, count.index)
 }
