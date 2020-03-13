@@ -12,8 +12,3 @@ output service_discovery_service_arn {
   description = "The Service Discovery Service ARN."
   value       = coalescelist(aws_service_discovery_service.sds.*.arn, [null])[0]
 }
-
-output alb_target_group_arn {
-  description = "The Target Group ARN."
-  value       = coalescelist(aws_lb_target_group.target.*.arn, [null])[0]
-}

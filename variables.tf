@@ -118,6 +118,18 @@ variable ingress_protocol {
   default     = "TCP"
 }
 
+variable security_group_cidr_blocks {
+  description = "The CIDR Blocks that should be used to limit ingress to the Service."
+  type        = set(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable security_group_allowed_security_groups {
+  description = "A list of Security Group IDs that should be allowed ingress on the `ingress_target_port`."
+  type        = set(string)
+  default     = []
+}
+
 # Service Discovery
 variable enable_service_discovery {
   description = "Whether the service should be registered with Service Discovery. In order to use Service Disovery, an existing DNS Namespace must exist and be passed in."
@@ -141,12 +153,6 @@ variable service_discovery_container_port {
   description = "The port value, already specified in the task definition, to be used for your service discovery service."
   type        = number
   default     = null
-}
-
-variable service_discovery_ingress_cidr_blocks {
-  description = "The CIDR Blocks that should be used to limit ingress to the Service."
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
 }
 
 variable service_discovery_namespace_id {
@@ -180,34 +186,10 @@ variable service_discovery_failure_threshold {
 }
 
 # Load Balancing
-variable enable_load_balancing {
-  description = "Whether an ALB should be associated to the service. To use Load Balancing, the ARN of an existing Listener must be passed in."
-  type        = bool
-  default     = false
-}
-
-variable load_balancer_listener_arn {
-  description = "The ARN of a Load Balancer Listener associated to an ALB."
-  type        = string
-  default     = null
-}
-
-variable load_balancer_security_group {
-  description = "The security group of load balancer."
-  type        = string
-  default     = null
-}
-
-variable load_balancer_use_sticky_sessions {
-  description = "Whether or not to enable Sticky Sessions via the `lb_cookie`. This is discouraged wherever possible."
-  type        = bool
-  default     = false
-}
-
-variable load_balancer_sticky_session_duration {
-  description = "The time period, in seconds, during which requests from a client should be routed to the same target. Between 1 and 604800."
-  type        = number
-  default     = 86400
+variable load_balancer_target_groups {
+  description = "A list of Target Group ARNs that the ECS Service should register with."
+  type        = list(string)
+  default     = []
 }
 
 variable health_check_grace_period_seconds {
@@ -221,47 +203,6 @@ variable health_check_grace_period_seconds {
 EOT
 
   default = 120
-}
-
-variable healthcheck_path {
-  description = "The path that should be used as a health check for your service, e.g `/health`, `/status`, or `/ping`."
-  type        = string
-  default     = "/"
-}
-
-variable healthcheck_healthy_threshold {
-  description = "The number of times the health check must pass before considering a target healthy."
-  type        = string
-  default     = 2
-}
-
-variable healthcheck_unhealthy_threshold {
-  description = "The number of times the health check must fail before considering a target unhealthy."
-  type        = string
-  default     = 2
-}
-
-variable healthcheck_timeout {
-  description = "The amount of time before the health check should timeout."
-  type        = string
-  default     = 5
-}
-
-variable healthcheck_protocol {
-  description = "The protocol for the health check, either `HTTP` or `TCP`."
-  type        = string
-  default     = "HTTP"
-}
-
-variable healthcheck_interval {
-  description = "How often in seconds the health check should be performed."
-  type        = string
-  default     = 30
-}
-
-variable load_balancer_draining_delay {
-  description = "The time to wait for in-flight requests to complete while deregistering a target."
-  default     = 30
 }
 
 # Secrets

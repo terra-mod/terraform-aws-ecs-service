@@ -47,36 +47,36 @@ resource aws_security_group_rule egress {
  * Creates the default ingress rule for the service for service discovery.
  */
 resource aws_security_group_rule sds_ingress {
-  count = var.enable_service_discovery ? 1 : 0
+  for_each = var.security_group_cidr_blocks
 
   security_group_id = aws_security_group.security_group.id
 
-  description = "Main ingress rule."
+  description = "CIDR Block Ingress rule."
   type        = "ingress"
 
   from_port = var.ingress_target_port
   to_port   = var.ingress_target_port
   protocol  = var.ingress_protocol
 
-  cidr_blocks = var.service_discovery_ingress_cidr_blocks
+  cidr_blocks = [each.value]
 }
 
 /**
  * Creates the default ingress rule for the service for load balancing.
  */
 resource aws_security_group_rule lb_ingress {
-  count = var.enable_load_balancing ? 1 : 0
+  for_each = var.security_group_allowed_security_groups
 
   security_group_id = aws_security_group.security_group.id
 
-  description = "Main ingress rule."
+  description = "Security Group Ingress rule."
   type        = "ingress"
 
   from_port = var.ingress_target_port
   to_port   = var.ingress_target_port
   protocol  = var.ingress_protocol
 
-  source_security_group_id = var.load_balancer_security_group
+  source_security_group_id = each.value
 }
 
 /**
@@ -122,7 +122,7 @@ resource aws_ecs_service service {
   }
 
   # This is only used with Load Balancing
-  health_check_grace_period_seconds = var.enable_load_balancing ? var.health_check_grace_period_seconds : null
+  health_check_grace_period_seconds = length(var.load_balancer_target_groups) > 0 ? var.health_check_grace_period_seconds : null
 
   network_configuration {
     security_groups  = [aws_security_group.security_group.id]
@@ -144,12 +144,12 @@ resource aws_ecs_service service {
 
   # When Load Balancing is enabled
   dynamic load_balancer {
-    for_each = aws_lb_target_group.target
+    for_each = var.load_balancer_target_groups
 
     content {
       container_name   = var.ingress_target_container
-      container_port   = load_balancer.value.port
-      target_group_arn = var.load_balancer_listener_arn
+      container_port   = var.ingress_target_port
+      target_group_arn = load_balancer.value
     }
   }
 
@@ -183,38 +183,6 @@ resource aws_service_discovery_service sds {
 
   health_check_custom_config {
     failure_threshold = var.service_discovery_failure_threshold
-  }
-}
-
-/**
- * Create a Target Group to target the instances in the ECS Service.
- */
-resource aws_lb_target_group target {
-  count = var.enable_load_balancing ? 1 : 0
-
-  name        = var.name
-  port        = var.ingress_target_port
-  protocol    = var.ingress_protocol
-  vpc_id      = var.vpc_id
-  target_type = "ip"
-
-  deregistration_delay = var.load_balancer_draining_delay
-
-  stickiness {
-    type            = "lb_cookie"
-    enabled         = var.load_balancer_use_sticky_sessions
-    cookie_duration = var.load_balancer_sticky_session_duration
-  }
-
-  health_check {
-    healthy_threshold   = var.healthcheck_healthy_threshold
-    unhealthy_threshold = var.healthcheck_unhealthy_threshold
-
-    timeout  = var.healthcheck_timeout
-    protocol = var.healthcheck_protocol
-
-    path     = var.healthcheck_path
-    interval = var.healthcheck_interval
   }
 }
 
