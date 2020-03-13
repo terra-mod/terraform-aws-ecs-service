@@ -121,7 +121,7 @@ variable ingress_protocol {
 variable security_group_cidr_blocks {
   description = "The CIDR Blocks that should be used to limit ingress to the Service."
   type        = set(string)
-  default     = ["0.0.0.0/0"]
+  default     = []
 }
 
 variable security_group_allowed_security_groups {
