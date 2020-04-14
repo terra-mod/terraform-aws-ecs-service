@@ -4,8 +4,8 @@ This module creates an ECS Service in an existing ECS Cluster.
 
 ##### Load Balancing
 This module supports the use of ALBs and NLBs by accepting the ARN of a Load Balancer Listener
-and creating the target group for the service. In order to use Load Balancing, the `enable_load_balancing` input variable
-must be set to `true`.
+and creating the target group for the service. In order to use Load Balancing, set the `load_balancer_target_groups` variable
+with the list of Target Group ARNs that the ECS Service should register with.
 
 ##### Service Discovery
 Service Discovery is supported by creating a Service Discovery Service via this module and allowing the configuration of the 
