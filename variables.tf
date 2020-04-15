@@ -205,6 +205,50 @@ EOT
   default = 120
 }
 
+
+variable create_load_balancer {
+  description = "Create an Internet facing load balancer to attach to the service."
+  type        = bool
+  default     = false
+}
+
+
+variable load_balancer_security_groups {
+  description = "Security Group for the load balancer to be created"
+  type        = list
+  default     = []
+}
+
+variable load_balancer_subnets {
+  description = "Subntes for the load balancer to be created"
+  type        = list
+  default     = []
+}
+
+variable target_group_port {
+  description = "Target group port associated to the created balancer and the service"
+  type        = number
+  default     = 80
+}
+
+variable target_group_protocol {
+  description = "Target group protocol associated to the created balancer and the service"
+  type        = string
+  default     = "HTTP"
+}
+
+variable target_group_target_type {
+  description = "Target group target_type associated to the created balancer and the service"
+  type        = string
+  default     = "ip"
+}
+
+variable target_group_vpc_id {
+  description = "Target group vpc_id associated to the created balancer and the service"
+  type        = string
+  default     = null
+}
+
 # Secrets
 variable secrets_policy_arns {
   description = "The ARNs of IAM Policies that grants the Service access to one or more SecretsManager Secrets."

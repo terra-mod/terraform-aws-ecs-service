@@ -144,7 +144,7 @@ resource aws_ecs_service service {
 
   # When Load Balancing is enabled
   dynamic load_balancer {
-    for_each = var.load_balancer_target_groups
+    for_each = length(var.load_balancer_target_groups) > 0 && var.create_load_balancer == false ? var.load_balancer_target_groups : aws_lb_target_group.target_group_service.*.arn
 
     content {
       container_name   = var.ingress_target_container
@@ -160,6 +160,8 @@ resource aws_ecs_service service {
   # AWS Accounts need to opt-in to allowing tagging of this resource, else this will
   # cause the resource creation to fail.
   tags = var.ecs_service_tagging_enabled ? local.tags : null
+
+  depends_on = [aws_lb.load_balancer_service]
 }
 
 /**
@@ -288,8 +290,41 @@ EOF
  * Attach a policy to the given role to allow access to Secrets in Secrets Manager.
  */
 resource aws_iam_role_policy_attachment secrets_policy_attachment {
-  count = length(var.secrets_policy_arns)
-
+  count      = length(var.secrets_policy_arns)
   role       = aws_iam_role.ecs_execution_role.id
   policy_arn = element(var.secrets_policy_arns, count.index)
+}
+
+/**
+ * Used when creating a load balancer
+ */
+resource "aws_lb" "load_balancer_service" {
+  count              = var.create_load_balancer == true ? 1 : 0
+  name               = "lb-${var.name}"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = var.load_balancer_security_groups
+  subnets            = var.load_balancer_subnets
+  depends_on         = [aws_lb_target_group.target_group_service]
+}
+
+resource "aws_lb_target_group" "target_group_service" {
+  count       = var.create_load_balancer == true ? 1 : 0
+  name        = "tg-${var.name}"
+  port        = var.target_group_port
+  protocol    = var.target_group_protocol
+  target_type = var.target_group_target_type
+  vpc_id      = var.target_group_vpc_id
+}
+
+resource "aws_lb_listener" "alb_listener" {
+  load_balancer_arn = aws_lb.load_balancer_service.*.arn[0]
+  port              = var.target_group_port
+  protocol          = var.target_group_protocol
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.target_group_service.*.arn[0]
+
+  }
 }
