@@ -124,10 +124,15 @@ resource aws_ecs_service service {
   # This is only used with Load Balancing
   health_check_grace_period_seconds = length(var.load_balancer_target_groups) > 0 ? var.health_check_grace_period_seconds : null
 
-  network_configuration {
-    security_groups  = [aws_security_group.security_group.id]
-    subnets          = var.networking_subnets
-    assign_public_ip = var.networking_assign_public_ip
+  # Only include a network configuration for `awsvpc` network mode
+  dynamic network_configuration {
+    for_each = var.task_network_mode == "awsvpc" ? [] : [1]
+
+    content {
+      security_groups  = [aws_security_group.security_group.id]
+      subnets          = var.networking_subnets
+      assign_public_ip = var.networking_assign_public_ip
+    }
   }
 
   # When Service Discovery is enabled
