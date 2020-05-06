@@ -19,6 +19,8 @@ locals {
  * outside of this module to be attached to this security group if desired.
  */
 resource aws_security_group security_group {
+  count = var.task_network_mode == "awsvpc" ? 1 : 0
+
   description = "ECS Service security group for ${var.cluster_name} ${var.name}."
 
   vpc_id = var.vpc_id
@@ -31,7 +33,9 @@ resource aws_security_group security_group {
  * Creates an default egress rule.
  */
 resource aws_security_group_rule egress {
-  security_group_id = aws_security_group.security_group.id
+  count = var.task_network_mode == "awsvpc" && var.security_group_default_egress ? 1 : 0
+
+  security_group_id = aws_security_group.security_group[0].id
 
   description = "Default egress - fully open."
   type        = "egress"
@@ -47,9 +51,9 @@ resource aws_security_group_rule egress {
  * Creates the default ingress rule for the service for service discovery.
  */
 resource aws_security_group_rule sds_ingress {
-  for_each = var.security_group_cidr_blocks
+  for_each = var.task_network_mode == "awsvpc" ? var.security_group_cidr_blocks : []
 
-  security_group_id = aws_security_group.security_group.id
+  security_group_id = aws_security_group.security_group[0].id
 
   description = "CIDR Block Ingress rule."
   type        = "ingress"
@@ -65,9 +69,9 @@ resource aws_security_group_rule sds_ingress {
  * Creates the default ingress rule for the service for load balancing.
  */
 resource aws_security_group_rule lb_ingress {
-  for_each = var.security_group_allowed_security_groups
+  for_each = var.task_network_mode == "awsvpc" ? var.security_group_allowed_security_groups : []
 
-  security_group_id = aws_security_group.security_group.id
+  security_group_id = aws_security_group.security_group[0].id
 
   description = "Security Group Ingress rule."
   type        = "ingress"
@@ -126,10 +130,10 @@ resource aws_ecs_service service {
 
   # Only include a network configuration for `awsvpc` network mode
   dynamic network_configuration {
-    for_each = var.task_network_mode == "awsvpc" ? [] : [1]
+    for_each = var.task_network_mode == "awsvpc" ? [aws_security_group.security_group.*.id] : []
 
     content {
-      security_groups  = [aws_security_group.security_group.id]
+      security_groups  = concat(network_configuration.value, var.service_security_groups)
       subnets          = var.networking_subnets
       assign_public_ip = var.networking_assign_public_ip
     }
@@ -156,10 +160,6 @@ resource aws_ecs_service service {
       container_port   = var.ingress_target_port
       target_group_arn = load_balancer.value
     }
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 
   # AWS Accounts need to opt-in to allowing tagging of this resource, else this will

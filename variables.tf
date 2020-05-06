@@ -118,6 +118,18 @@ variable ingress_protocol {
   default     = "TCP"
 }
 
+variable service_security_groups {
+  description = "A list of additional security groups that should be assigned to the Service."
+  type        = list(string)
+  default     = []
+}
+
+variable security_group_default_egress {
+  description = "Whether to include a default egress rule that allows all outbound traffic."
+  type        = bool
+  default     = true
+}
+
 variable security_group_cidr_blocks {
   description = "The CIDR Blocks that should be used to limit ingress to the Service."
   type        = set(string)
