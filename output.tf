@@ -5,7 +5,7 @@ output ecs_iam_role_id {
 
 output security_group_id {
   description = "The ID of the Security Group generated for the Service"
-  value       = coalescelist([aws_security_group.security_group.*.id], [null])[0]
+  value       = coalescelist(aws_security_group.security_group.*.id, [null])[0]
 }
 
 output service_discovery_service_arn {
