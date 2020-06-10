@@ -255,3 +255,8 @@ variable scaling_threshold {
   description = "The desired value for the `scaling_metric`. Defaults to 70%."
   default     = 70
 }
+
+variable platform_version {
+  description = "The platform version on which to run your service. Only applicable for launch_type set to FARGATE. Defaults to LATEST."
+  default = "LATEST"
+  }
