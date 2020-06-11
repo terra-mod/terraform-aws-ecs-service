@@ -258,5 +258,5 @@ variable scaling_threshold {
 
 variable platform_version {
   description = "The platform version on which to run your service. Only applicable for launch_type set to FARGATE. Defaults to LATEST."
-  default = "LATEST"
-  }
+  default     = "LATEST"
+}
