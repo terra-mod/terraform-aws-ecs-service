@@ -111,6 +111,7 @@ resource aws_ecs_service service {
   name                               = var.name
   cluster                            = var.cluster_name
   launch_type                        = var.launch_type
+  platform_version                   = var.platform_version
   task_definition                    = aws_ecs_task_definition.task.arn
   desired_count                      = var.desired_count
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
