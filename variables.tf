@@ -26,6 +26,12 @@ variable launch_type {
   default     = "FARGATE"
 }
 
+variable scheduling_strategy {
+  description = "The scheduling strategy to use for the service. The valid values are REPLICA and DAEMON. Defaults to REPLICA. Note that Tasks using the Fargate launch type or the CODE_DEPLOY or EXTERNAL deployment controller types don't support the DAEMON scheduling strategy."
+  type        = string
+  default     = "REPLICA"
+}
+
 variable networking_subnets {
   description = "The subnets for the Service."
   type        = list(string)
@@ -91,6 +97,12 @@ variable task_memory {
 variable task_cpu {
   description = "The number of cpu units to reserve for the task."
   default     = 256
+}
+
+variable task_volumes {
+  description = "A set of volume blocks that containers in your task may use."
+  type        = set(object({ name: string, host_path: string }))
+  default     = []
 }
 
 variable cloudwatch_log_group_arn {
