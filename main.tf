@@ -102,6 +102,15 @@ resource aws_ecs_task_definition task {
   requires_compatibilities = var.task_requires_compatibilities
 
   container_definitions = var.task_definition
+
+  dynamic "volume" {
+    for_each = var.task_volumes
+
+    content {
+      name      = volume.value["name"]
+      host_path = volume.value["host_path"]
+    }
+  }
 }
 
 /**
@@ -111,6 +120,7 @@ resource aws_ecs_service service {
   name                               = var.name
   cluster                            = var.cluster_name
   launch_type                        = var.launch_type
+  scheduling_strategy                = var.scheduling_strategy
   platform_version                   = var.platform_version
   task_definition                    = aws_ecs_task_definition.task.arn
   desired_count                      = var.desired_count
@@ -118,7 +128,7 @@ resource aws_ecs_service service {
   deployment_maximum_percent         = var.deployment_maximum_percent
 
   dynamic "ordered_placement_strategy" {
-    for_each = var.launch_type == "FARGATE" ? [] : [1]
+    for_each = var.launch_type == "FARGATE" || var.scheduling_strategy == "DAEMON" ? [] : [1]
 
     content {
       type  = "spread"
