@@ -267,7 +267,7 @@ EOF
 }
 
 /**
- * Generates the a default Policy for the ECS Container
+ * Generates a default Policy for the ECS Container
  */
 resource aws_iam_role_policy ecs_execution_default_policy {
   count = var.use_execution_role ? 1 : 0
@@ -295,7 +295,7 @@ EOF
 }
 
 /**
- * Generates the Policy for the ECS Container
+ * Generates a policy for the execution role to provide access to the given Cloudwatch Log stream.
  */
 resource aws_iam_role_policy ecs_execution_log_policy {
   count = var.use_execution_role && var.cloudwatch_log_group_arn != null ? 1 : 0
@@ -321,7 +321,7 @@ EOF
 }
 
 /**
- * Generates the Role for the ECS Container
+ * Generates a Task Role for the ECS Task.
  */
 resource aws_iam_role ecs_task_role {
   count = var.use_task_role ? 1 : 0
