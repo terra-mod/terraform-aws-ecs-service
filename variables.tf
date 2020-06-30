@@ -101,7 +101,7 @@ variable task_cpu {
 
 variable task_volumes {
   description = "A set of volume blocks that containers in your task may use."
-  type        = set(object({ name: string, host_path: string }))
+  type        = set(object({ name : string, host_path : string }))
   default     = []
 }
 
@@ -229,12 +229,32 @@ EOT
   default = 120
 }
 
-# Secrets
-variable secrets_policy_arns {
-  description = "The ARNs of IAM Policies that grants the Service access to one or more SecretsManager Secrets."
+# Policies
+variable use_task_role {
+  description = "Whether or not a default Task Role should be created for this task. Policy ARNS can be supplied to attach policies to the generated role."
+  type        = bool
+  default     = true
+}
+
+variable task_role_policy_arns {
+  description = "The ARNs of any additional IAM Policies that should be attached to the ECS Task Role."
   type        = list(string)
   default     = []
 }
+
+variable use_execution_role {
+  description = "Whether or not a default Task Execution Role should be created for this task. Policy ARNS can be supplied to attach policies to the generated role."
+  type        = bool
+  default     = true
+}
+
+variable execution_role_policy_arns {
+  description = "The ARNs of any additional IAM Policies that should be attached to the ECS Execution Role."
+  type        = list(string)
+  default     = []
+}
+
+
 
 # ECS Auto Scaling
 variable enable_auto_scaling {

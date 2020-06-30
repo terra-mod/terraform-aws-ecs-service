@@ -88,8 +88,8 @@ resource aws_security_group_rule lb_ingress {
  */
 resource aws_ecs_task_definition task {
   family             = var.name
-  task_role_arn      = aws_iam_role.ecs_execution_role.arn
-  execution_role_arn = aws_iam_role.ecs_execution_role.arn
+  task_role_arn      = var.use_task_role ? aws_iam_role.ecs_task_role[0].arn : null
+  execution_role_arn = var.use_execution_role ? aws_iam_role.ecs_execution_role[0].arn : null
 
   cpu    = var.task_cpu
   memory = var.task_memory
@@ -245,6 +245,8 @@ resource aws_appautoscaling_policy auto_scaling {
  * Generates the Role for the ECS Container
  */
 resource aws_iam_role ecs_execution_role {
+  count = var.use_execution_role ? 1 : 0
+
   name = "${var.cluster_name}-${var.name}-execution-role"
 
   assume_role_policy = <<EOF
@@ -265,11 +267,13 @@ EOF
 }
 
 /**
- * Generates the Policy for the ECS Container
+ * Generates the a default Policy for the ECS Container
  */
-resource aws_iam_role_policy ecs_execution_role_policy {
-  name = "${var.cluster_name}-${var.name}-execution-policy"
-  role = aws_iam_role.ecs_execution_role.id
+resource aws_iam_role_policy ecs_execution_default_policy {
+  count = var.use_execution_role ? 1 : 0
+
+  name = "${var.cluster_name}-${var.name}-default-policy"
+  role = aws_iam_role.ecs_execution_role[0].id
 
   policy = <<EOF
 {
@@ -285,8 +289,25 @@ resource aws_iam_role_policy ecs_execution_role_policy {
       ],
       "Resource": "*"
     }
-    %{if var.cloudwatch_log_group_arn != null}
-    ,{
+  ]
+}
+EOF
+}
+
+/**
+ * Generates the Policy for the ECS Container
+ */
+resource aws_iam_role_policy ecs_execution_log_policy {
+  count = var.use_execution_role && var.cloudwatch_log_group_arn != null ? 1 : 0
+
+  name = "${var.cluster_name}-${var.name}-cloudwatch-log-policy"
+  role = aws_iam_role.ecs_execution_role[0].id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
       "Effect": "Allow",
       "Action": [
         "logs:CreateLogStream",
@@ -294,18 +315,52 @@ resource aws_iam_role_policy ecs_execution_role_policy {
       ],
       "Resource": "${var.cloudwatch_log_group_arn}"
     }
-    %{endif}
   ]
 }
 EOF
 }
 
 /**
- * Attach a policy to the given role to allow access to Secrets in Secrets Manager.
+ * Generates the Role for the ECS Container
  */
-resource aws_iam_role_policy_attachment secrets_policy_attachment {
-  count = length(var.secrets_policy_arns)
+resource aws_iam_role ecs_task_role {
+  count = var.use_task_role ? 1 : 0
 
-  role       = aws_iam_role.ecs_execution_role.id
-  policy_arn = element(var.secrets_policy_arns, count.index)
+  name = "${var.cluster_name}-${var.name}-task-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+/**
+ * Attach a additional policies to the ECS Task Role.
+ */
+resource aws_iam_role_policy_attachment task_policy_attachments {
+  count = var.use_task_role ? length(var.task_role_policy_arns) : 0
+
+  role       = aws_iam_role.ecs_task_role[0].id
+  policy_arn = element(var.task_role_policy_arns, count.index)
+}
+
+/**
+ * Attach a additional policies to the ECS Execution Role.
+ */
+resource aws_iam_role_policy_attachment execution_policy_attachments {
+  count = var.use_execution_role ? length(var.execution_role_policy_arns) : 0
+
+  role       = aws_iam_role.ecs_execution_role[0].id
+  policy_arn = element(var.execution_role_policy_arns, count.index)
 }

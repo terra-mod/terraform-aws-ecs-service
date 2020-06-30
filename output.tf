@@ -1,6 +1,11 @@
-output ecs_iam_role_id {
-  description = "The ID for the IAM Role attached to the Service."
-  value       = aws_iam_role.ecs_execution_role.id
+output ecs_execution_role_id {
+  description = "The ID for the Task Execution Role attached to the Service."
+  value       = var.use_execution_role ? aws_iam_role.ecs_execution_role[0].id : null
+}
+
+output ecs_task_role_id {
+  description = "The ID for the Task Execution Role attached to the Service."
+  value       = var.use_task_role ? aws_iam_role.ecs_task_role[0].id : null
 }
 
 output security_group_id {
