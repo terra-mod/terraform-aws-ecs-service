@@ -313,7 +313,7 @@ resource aws_iam_role_policy ecs_execution_log_policy {
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ],
-      "Resource": "${var.cloudwatch_log_group_arn}"
+      "Resource": "${replace(var.cloudwatch_log_group_arn, "/:\\*$/", "")}:*}",
     }
   ]
 }
