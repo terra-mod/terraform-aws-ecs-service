@@ -289,25 +289,8 @@ resource aws_iam_role_policy ecs_execution_default_policy {
         "ecr:BatchGetImage"
       ],
       "Resource": "*"
-    }
-  ]
-}
-EOF
-}
-
-/**
- * Generates a policy for the execution role to provide access to the given Cloudwatch Log stream.
- */
-resource aws_iam_role_policy ecs_execution_log_policy {
-  count = var.use_execution_role && var.cloudwatch_log_group_arn != null ? 1 : 0
-
-  name = "${var.cluster_name}-${var.name}-cloudwatch-log-policy"
-  role = aws_iam_role.ecs_execution_role[0].id
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
+    },
+    %{ if var.cloudwatch_log_group_arn != null }
     {
       "Effect": "Allow",
       "Action": [
@@ -316,6 +299,7 @@ resource aws_iam_role_policy ecs_execution_log_policy {
       ],
       "Resource": "${replace(var.cloudwatch_log_group_arn, "/:\\*$/", "")}:*}",
     }
+    %{ endif }
   ]
 }
 EOF
