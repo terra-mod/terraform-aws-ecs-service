@@ -154,9 +154,9 @@ resource aws_ecs_service service {
   dynamic service_registries {
     for_each = aws_service_discovery_service.sds
 
+    # Setting port is not supported whne using "host" or "bridge" network mode.
     content {
       registry_arn   = service_registries.value.arn
-      # Setting port is not supported whne using "host" or "bridge" network mode.
       port           = var.task_network_mode == "awsvpc" ? var.service_discovery_container_port : null
       container_name = var.service_discovery_container_name
       container_port = var.service_discovery_container_port
