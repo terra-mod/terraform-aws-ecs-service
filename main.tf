@@ -127,6 +127,15 @@ resource aws_ecs_service service {
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
 
+  dynamic "capacity_provider_strategy" {
+    for_each = var.capacity_provider_strategies
+    content {
+      capacity_provider = capacity_provider_strategy.value.capacity_provider
+      weight            = capacity_provider_strategy.value.weight
+      base              = lookup(capacity_provider_strategy.value, "base", null)
+    }
+  }
+  
   dynamic "ordered_placement_strategy" {
     for_each = var.launch_type == "FARGATE" || var.scheduling_strategy == "DAEMON" ? [] : [1]
 
