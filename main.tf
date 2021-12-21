@@ -119,7 +119,7 @@ resource aws_ecs_task_definition task {
 resource aws_ecs_service service {
   name                               = var.name
   cluster                            = var.cluster_name
-  launch_type                        = var.launch_type
+  launch_type                        = length(var.capacity_provider_strategies) > 0 ? null : var.launch_type
   scheduling_strategy                = var.scheduling_strategy
   platform_version                   = var.platform_version
   task_definition                    = aws_ecs_task_definition.task.arn
