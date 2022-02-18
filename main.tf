@@ -119,7 +119,7 @@ resource aws_ecs_task_definition task {
 resource aws_ecs_service service {
   name                               = var.name
   cluster                            = var.cluster_name
-  launch_type                        = var.launch_type
+  launch_type                        = length(var.capacity_provider_strategies) > 0 ? null : var.launch_type
   scheduling_strategy                = var.scheduling_strategy
   platform_version                   = var.platform_version
   task_definition                    = aws_ecs_task_definition.task.arn
@@ -127,6 +127,15 @@ resource aws_ecs_service service {
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.deployment_maximum_percent
 
+  dynamic "capacity_provider_strategy" {
+    for_each = var.capacity_provider_strategies
+    content {
+      capacity_provider = capacity_provider_strategy.value.capacity_provider
+      weight            = capacity_provider_strategy.value.weight
+      base              = lookup(capacity_provider_strategy.value, "base", null)
+    }
+  }
+  
   dynamic "ordered_placement_strategy" {
     for_each = var.launch_type == "FARGATE" || var.scheduling_strategy == "DAEMON" ? [] : [1]
 
