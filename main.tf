@@ -11,7 +11,7 @@ locals {
     ManagedBy   = "terraform"
     Cluster     = var.cluster_name
     Service     = var.name
-  }), var.tags_overwritten)
+  }), var.overwrite_tags)
 }
 
 /**
