@@ -61,8 +61,8 @@ variable tags {
   default     = {}
 }
 
-variable "tags_overwritten" {
-  description = "Tags that always overwrite any other tags."
+variable "overwrite_tags" {
+  description = "Tags that always overwrite any other tags, usually for auto-generated tags."
   type        = map(string)
   default     = {}
 }
