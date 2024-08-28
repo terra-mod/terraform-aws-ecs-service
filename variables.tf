@@ -61,6 +61,12 @@ variable tags {
   default     = {}
 }
 
+variable "tags_overwritten" {
+  description = "Tags that always overwrite any other tags."
+  type        = map(string)
+  default     = {}
+}
+
 variable deployment_minimum_healthy_percent {
   description = "lower limit (% of desired_count) of # of running tasks during a deployment."
   default     = 100

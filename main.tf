@@ -6,12 +6,12 @@ terraform {
 }
 
 locals {
-  tags = merge(var.tags, {
+  tags = merge(merge(var.tags, {
     Environment = var.environment
     ManagedBy   = "terraform"
     Cluster     = var.cluster_name
     Service     = var.name
-  })
+  }), var.tags_overwritten)
 }
 
 /**
