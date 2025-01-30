@@ -185,6 +185,12 @@ variable service_discovery_namespace_id {
   default     = null
 }
 
+variable service_discovery_service_name {
+  description = "The name of service to use for DNS configuration."
+  type        = string
+  default     = null
+}
+
 variable service_discovery_dns_record_type {
   description = "The type of the resource, which indicates the value that Amazon Route 53 returns in response to DNS queries. One of `A` or `SRV`."
   type        = string

@@ -194,7 +194,7 @@ resource aws_ecs_service service {
 resource aws_service_discovery_service sds {
   count = var.enable_service_discovery ? 1 : 0
 
-  name = var.name
+  name = var.service_discovery_service_name != null ? var.service_discovery_service_name : var.name
 
   dns_config {
     namespace_id = var.service_discovery_namespace_id
